@@ -1,0 +1,57 @@
+# 企业级代码审计平台 - 测试配置
+
+# API 配置
+api:
+  provider: "openai"  # 临时使用 OpenAI，后续切换为小米
+  base_url: "https://api.openai.com/v1"
+  api_key: "YOUR_API_KEY_HERE"  # 请替换为实际的 API Key
+  model: "gpt-4-turbo-preview"  # 或 gpt-4
+
+# 运行配置
+runtime:
+  # 运行模式: "duration" (按时长) 或 "count" (按调用次数)
+  mode: "count"
+  # 调用次数限制（mode=count 时生效）
+  call_limit: 100
+  # 运行时长限制（秒）（mode=duration 时生效）
+  duration_limit: 3600
+  # 并发数
+  concurrency: 3
+
+# 模拟代码库配置
+codebase:
+  # 代码库路径（留空则使用内置模拟数据）
+  path: ""
+  # 模拟文件数量
+  file_count: 50
+  # 平均每个文件 token 数（模拟大项目）
+  avg_tokens_per_file: 5000
+
+# 场景配置
+scenarios:
+  code_review:
+    enabled: true
+    weight: 0.4  # 占总调用的 40%
+    context_size: 100000  # 100K tokens 模拟大上下文
+  
+  cross_file_analysis:
+    enabled: true
+    weight: 0.3  # 占总调用的 30%
+    context_size: 200000  # 200K tokens
+  
+  bug_fix_suggestion:
+    enabled: true
+    weight: 0.2  # 占总调用的 20%
+    context_size: 50000
+  
+  logic_orchestration:
+    enabled: true
+    weight: 0.1  # 占总调用的 10%
+    context_size: 300000  # 300K tokens
+
+# 日志配置
+logging:
+  output_dir: "./logs"
+  log_level: "INFO"
+  save_raw_logs: true
+  generate_report: true
