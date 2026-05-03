@@ -38,19 +38,95 @@ class CodeAuditDemo:
             )
         self.model = api_config['model']
         
-        # 模拟代码库
-        self.codebase = self._generate_mock_codebase()
+        # 加载代码库（真实路径或模拟数据）
+        self.codebase = self._load_codebase()
         
     def _load_config(self, config_path: str) -> Dict[str, Any]:
         """加载配置文件"""
         with open(config_path, 'r', encoding='utf-8') as f:
             return yaml.safe_load(f)
     
+    def _load_codebase(self) -> List[Dict[str, Any]]:
+        """加载代码库（真实路径或模拟数据）"""
+        codebase_config = self.config['codebase']
+        codebase_path = codebase_config.get('path', '').strip()
+        
+        if codebase_path:
+            # 读取真实代码库
+            return self._load_real_codebase(codebase_path)
+        else:
+            # 使用模拟数据
+            return self._generate_mock_codebase()
+    
+    def _load_real_codebase(self, codebase_path: str) -> List[Dict[str, Any]]:
+        """读取真实代码库"""
+        from pathlib import Path
+        import fnmatch
+        
+        codebase_config = self.config['codebase']
+        exclude_patterns = codebase_config.get('exclude', [])
+        extensions = codebase_config.get('extensions', ['.py', '.js', '.ts', '.java', '.go'])
+        
+        base_path = Path(codebase_path)
+        if not base_path.exists():
+            print(f"⚠️  代码库路径不存在: {codebase_path}，使用模拟数据")
+            return self._generate_mock_codebase()
+        
+        codebase = []
+        
+        # 遍历文件
+        for file_path in base_path.rglob('*'):
+            if not file_path.is_file():
+                continue
+            
+            # 检查扩展名
+            if file_path.suffix.lower() not in extensions:
+                continue
+            
+            # 检查排除规则
+            relative_path = file_path.relative_to(base_path)
+            should_exclude = False
+            for pattern in exclude_patterns:
+                if fnmatch.fnmatch(str(relative_path), pattern) or fnmatch.fnmatch(file_path.name, pattern):
+                    should_exclude = True
+                    break
+            
+            if should_exclude:
+                continue
+            
+            # 读取文件内容
+            try:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
+            except Exception as e:
+                print(f"⚠️  无法读取文件 {file_path}: {e}")
+                continue
+            
+            # 估算 token 数量（粗略估算：字符数 / 4）
+            estimated_tokens = len(content) // 4
+            
+            codebase.append({
+                'id': str(file_path),
+                'name': str(relative_path),
+                'tokens': estimated_tokens,
+                'content': content
+            })
+        
+        if not codebase:
+            print(f"⚠️  未找到符合条件的代码文件，使用模拟数据")
+            return self._generate_mock_codebase()
+        
+        total_tokens = sum(f['tokens'] for f in codebase)
+        print(f"📁 已加载真实代码库: {len(codebase)} 个文件，总 {total_tokens:,} tokens")
+        print(f"   路径: {codebase_path}")
+        
+        return codebase
+    
     def _generate_mock_codebase(self) -> List[Dict[str, Any]]:
         """生成模拟代码库"""
-        codebase_config = self.config['codebase']
-        file_count = codebase_config['file_count']
-        avg_tokens = codebase_config['avg_tokens_per_file']
+        codebase_config = self.config['codebase'].get('mock', {})
+        file_count = codebase_config.get('file_count', 50)
+        avg_tokens = codebase_config.get('avg_tokens_per_file', 5000)
         
         codebase = []
         file_types = ['.py', '.js', '.java', '.go', '.ts']

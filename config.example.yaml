@@ -1,11 +1,12 @@
-# 企业级代码审计平台 - 测试配置
+# 企业级代码审计平台 - 配置示例
+# 复制此文件为 config.yaml 并根据实际情况修改
 
 # API 配置
 api:
-  provider: "openai"  # 临时使用 OpenAI，后续切换为小米
-  base_url: "https://api.deepseek.com"
-  api_key: "sk-05a9f60d11d3423a8fba6bbb6013a66e"  # 请替换为实际的 API Key
-  model: "deepseek-v4-flash"  # 或 gpt-4
+  provider: "openai"  # openai, deepseek, 或其他兼容 OpenAI API 的服务
+  base_url: "https://api.openai.com/v1"
+  api_key: "YOUR_API_KEY_HERE"  # 请替换为实际的 API Key
+  model: "gpt-4-turbo-preview"  # 或 gpt-4, deepseek-v4-flash 等
 
 # 运行配置
 runtime:
@@ -22,6 +23,7 @@ runtime:
 codebase:
   # 代码库路径（留空则使用内置模拟数据）
   # 支持绝对路径或相对路径
+  # 示例: "D:/projects/my-project" 或 "./my-project"
   path: ""
   
   # 文件排除规则（glob 模式）
@@ -63,12 +65,12 @@ scenarios:
   code_review:
     enabled: true
     weight: 0.4  # 占总调用的 40%
-    context_size: 100000  # 100K tokens 模拟大上下文
+    context_size: 100000  # 测试 100K tokens 上下文
   
   cross_file_analysis:
     enabled: true
     weight: 0.3  # 占总调用的 30%
-    context_size: 200000  # 200K tokens
+    context_size: 200000  # 测试 200K tokens 上下文
   
   bug_fix_suggestion:
     enabled: true
@@ -78,7 +80,7 @@ scenarios:
   logic_orchestration:
     enabled: true
     weight: 0.1  # 占总调用的 10%
-    context_size: 300000  # 300K tokens
+    context_size: 300000  # 测试 300K tokens 上下文
 
 # 日志配置
 logging:
